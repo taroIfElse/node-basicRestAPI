@@ -1,22 +1,40 @@
 const { response, request } = require("express");
-
+const bcryptjs = require("bcryptjs");
+const User = require("../models/user");
+const verifyEmail = require("../middlewares/userValidations");
 const usersGet = (req = request, res = response) => {
-  const { q, nombre = "No name", apikey, page = 1, limit } = req.query;
+  const { q, name = "No name", apikey, page = 1, limit } = req.query;
   res.json({
     msg: "get API - Controller",
     q,
-    nombre,
+    name,
     apikey,
     page,
     limit,
   });
 };
 
-const usersPost = (req, res) => {
-  const body = req.body;
+const usersPost = async (req, res) => {
+  const { name, email, password, role } = req.body;
+  const user = new User({ name, email, password, role });
+
+  //verificar si el correo existe
+  const emailExists = await User.findOne({ email });
+  if (emailExists) {
+    return res.status(404).json({
+      msg: "This email is already used",
+    });
+  }
+
+  //encriptar password
+  const salt = bcryptjs.genSaltSync();
+  user.password = bcryptjs.hashSync(password, salt);
+
+  //guarda en BD
+  await user.save();
+
   res.json({
-    msg: "post API - Controller",
-    body,
+    user,
   });
 };
 
