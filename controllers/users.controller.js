@@ -38,11 +38,18 @@ const usersPost = async (req, res) => {
   });
 };
 
-const usersPut = (req, res) => {
-  const { id } = req.params.id;
+const usersPut = async (req, res) => {
+  const { id } = req.params;
+  const { password, google, email, ...info } = req.body;
+  //validar vs bd
+  if (password) {
+    const salt = bcryptjs.genSaltSync();
+    info.password = bcryptjs.hashSync(password, salt);
+  }
+  const user = await User.findByIdAndUpdate(id, info);
   res.json({
     msg: "put API - Controller",
-    val: `user ${id} was added`,
+    user,
   });
 };
 
