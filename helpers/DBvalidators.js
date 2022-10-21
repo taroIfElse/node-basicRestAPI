@@ -31,9 +31,15 @@ const infoUserConst = [
   check("role").custom(existRoleInDB),
 ];
 
+const infoUserConstDelete = [
+  check("id", "Is not a Mongo ID").isMongoId(),
+  check("id").custom(existUserById),
+];
+
 module.exports = {
   infoUserConst,
   existUserById,
   existRoleInDB,
   infoUserConstPut,
+  infoUserConstDelete,
 };

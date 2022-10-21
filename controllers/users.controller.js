@@ -1,16 +1,17 @@
 const { response, request } = require("express");
 const bcryptjs = require("bcryptjs");
 const User = require("../models/user");
-const verifyEmail = require("../middlewares/userValidations");
-const usersGet = (req = request, res = response) => {
-  const { q, name = "No name", apikey, page = 1, limit } = req.query;
+
+const usersGet = async (req = request, res = response) => {
+  const { limit = 5, from = 0 } = req.query;
+  const query = { state: true };
+  const [users, total] = await Promise.all([
+    User.find(query).skip(Number(from)).limit(Number(limit)),
+    User.count(query),
+  ]);
   res.json({
-    msg: "get API - Controller",
-    q,
-    name,
-    apikey,
-    page,
-    limit,
+    total,
+    users,
   });
 };
 
@@ -48,7 +49,6 @@ const usersPut = async (req, res) => {
   }
   const user = await User.findByIdAndUpdate(id, info);
   res.json({
-    msg: "put API - Controller",
     user,
   });
 };
@@ -59,9 +59,12 @@ const usersPatch = (req, res) => {
   });
 };
 
-const usersDelete = (req, res) => {
+const usersDelete = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findByIdAndUpdate(id, { state: false });
+  user.save();
   res.json({
-    msg: "delete API - Controller",
+    msg: `User ${user.name} was deleted`,
   });
 };
 
