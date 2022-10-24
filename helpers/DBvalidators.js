@@ -1,6 +1,9 @@
 const Role = require("../models/role");
 const { check } = require("express-validator");
 const Usuario = require("../models/user");
+const { validateJSONWT } = require("../middlewares/validateJWT");
+const { isAdminRole } = require("../middlewares/validateRole");
+const { userHasRole } = require("../middlewares/hasRole");
 const existRoleInDB = async (role = "") => {
   const roleExists = await Role.findOne({ role });
   if (!roleExists) {
@@ -32,6 +35,9 @@ const infoUserConst = [
 ];
 
 const infoUserConstDelete = [
+  validateJSONWT,
+  //  isAdminRole,
+  userHasRole("ADMIN_ROLE", "SALES_ROLE"),
   check("id", "Is not a Mongo ID").isMongoId(),
   check("id").custom(existUserById),
 ];
