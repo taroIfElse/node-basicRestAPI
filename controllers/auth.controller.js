@@ -1,5 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const User = require("../models/user");
+const { generateJWT } = require("../helpers/generJWT");
 const authPost = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -25,14 +26,16 @@ const authPost = async (req, res) => {
       });
     }
     //generar el JWT
+    const token = await generateJWT(user.id);
 
     res.json({
-      msg: "Login ok",
+      user,
+      token,
     });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      msg: "Please contact with an administrators",
+      msg: "Please contact with an administrator",
     });
   }
 };
